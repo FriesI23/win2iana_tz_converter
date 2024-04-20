@@ -15,7 +15,8 @@
 
 typedef DataBase = Map<String, dynamic>;
 
-// https://github.com/unicode-org/cldr-json/blob/2b8ca7d92dd68d06c60bbd74f8ad8436c5e8bddc/cldr-json/cldr-core/supplemental/windowsZones.json
+/// Default data, source
+/// [here](https://github.com/unicode-org/cldr-json/blob/2b8ca7d92dd68d06c60bbd74f8ad8436c5e8bddc/cldr-json/cldr-core/supplemental/windowsZones.json)
 const DataBase database = {
   "supplemental": {
     "version": {"_unicodeVersion": "15.1.0", "_cldrVersion": "45"},

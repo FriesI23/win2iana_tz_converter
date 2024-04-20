@@ -13,9 +13,16 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with tz_converter. If not, see <https://www.gnu.org/licenses/>.
 
+/// Represents a mapping between an IANA time zone identifier and
+/// a corresponding Windows time zone identifier.
 class WinIanaZone {
+  /// The IANA time zone identifier. e.g. Asia/Kabul
   final String iana;
+
+  /// The Windows time zone identifier. e.g. Afghanistan Standard Time
   final String windows;
+
+  /// The territory associated with the time zone.
   final String territory;
 
   const WinIanaZone({
@@ -36,7 +43,7 @@ class WinIanaZone {
       };
 
   @override
-  bool operator ==(Object? other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! WinIanaZone) return false;
     return iana == other.iana &&

@@ -1,4 +1,4 @@
-import 'package:win2iana_tz_converter/tz_converter.dart';
+import 'package:win2iana_tz_converter/win2iana_tz_converter.dart';
 
 void defaultConverter() {
   print('[normal]------------------------');

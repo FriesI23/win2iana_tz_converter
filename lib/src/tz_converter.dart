@@ -16,19 +16,36 @@
 import 'database.dart';
 import 'tz_info.dart';
 
-abstract interface class TZConverter {
+/// An abstract interface for converting between Windows and IANA time zone
+/// identifiers, and providing access to a collection of time zone mappings.
+abstract class TZConverter {
+  /// Converts a Windows time zone identifier to a list of corresponding
+  /// IANA time zones.
+  /// e.g. `China Standard Time -> Asia/Shanghai, Asia/Hong_Kong, ...`
   List<WinIanaZone> windowsToIana(String tziName);
+
+  /// Converts an IANA time zone identifier to a list of corresponding
+  /// Windows time zones.
+  /// e.g. `Asia/Shanghai -> China Standard Time`
   List<WinIanaZone> ianaToWindws(String tzName);
+
+  /// Provides an iterable view of the time zone mappings.
   Iterable<WinIanaZone> get iter;
 
+  /// Constructs a [TZConverter] instance.
   factory TZConverter({DataBase? db}) =>
       db != null ? TZConverterImpl(db: db) : const TZConverterImpl();
 
+  /// Constructs a cached [TZConverter] instance.
+  ///
+  /// If [db] is provided and different from the current [database],
+  /// a new [TZConverter] with the provided [database] will be used.
   static TzConverterWithCache cache({DataBase? db}) =>
       db != null && !identical(db, database)
           ? TzConverterWithCache(TZConverter(db: db))
           : TzConverterWithCache(TZConverter());
 
+  /// Constructs a cached [TZConverter] instance with specified converter.
   static TzConverterWithCache cacheWithParent(TZConverter parent) =>
       TzConverterWithCache(parent);
 }
