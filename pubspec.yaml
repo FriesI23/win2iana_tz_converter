@@ -1,0 +1,29 @@
+name: win2iana_tz_converter
+description: |
+  A lightweight package used for converting between Windows time zones
+  and IANA time zone database format.
+version: 0.1.0
+homepage: https://github.com/FriesI23/win2iana_tz_converter
+repository: https://github.com/FriesI23/win2iana_tz_converter
+issue_tracker: https://github.com/FriesI23/win2iana_tz_converter/issues
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+# Add regular dependencies here.
+# dependencies:
+  # path: ^1.8.0
+
+dev_dependencies:
+  build_runner: ^2.4.9
+  lints: ^3.0.0
+  mockito: ^5.4.4
+  test: ^1.24.0
+
+funding:
+  - https://www.buymeacoffee.com/d49cb87qgww
+
+topics:
+  - converter
+  - timezone
+  - IANA
