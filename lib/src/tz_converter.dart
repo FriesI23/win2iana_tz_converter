@@ -32,6 +32,8 @@ abstract class TZConverter {
   /// Provides an iterable view of the time zone mappings.
   Iterable<WinIanaZone> get iter;
 
+  String getStableIanaTZName(String tzName);
+
   /// Constructs a [TZConverter] instance.
   factory TZConverter({DataBase? db}) =>
       db != null ? TZConverterImpl(db: db) : const TZConverterImpl();
@@ -55,18 +57,30 @@ final class TZConverterImpl implements TZConverter {
 
   const TZConverterImpl({DataBase db = database}) : _database = db;
 
+  Map<String, String> get _ianaAliasMapping =>
+      _database["ianaAlias"] ?? const {};
+
+  @override
+  String getStableIanaTZName(String tzName) =>
+      _ianaAliasMapping[tzName] ?? tzName;
+
   @override
   List<WinIanaZone> windowsToIana(String tziName) =>
       iter.where((e) => e.windows == tziName).toList();
 
   @override
-  List<WinIanaZone> ianaToWindws(String tzName) =>
-      iter.where((e) => e.iana == tzName).toList();
+  List<WinIanaZone> ianaToWindws(String tzName) {
+    tzName = getStableIanaTZName(tzName);
+    return iter.where((e) => e.iana == tzName).toList();
+  }
 
   @override
   Iterable<WinIanaZone> get iter => (_database["supplemental"]["windowsZones"]
           ["mapTimezones"] as List<Map<String, Map<String, String>>>)
-      .map((e) => WinIanaZone.fromJson(e["mapZone"]!));
+      .map((d) => d["mapZone"]!["_type"]!.split(' ').map((t) =>
+          WinIanaZone.fromJson(
+              Map.of(d["mapZone"]!)..update("_type", (value) => t))))
+      .expand((e) => e);
 }
 
 final class TzConverterWithCache implements TZConverter {
@@ -107,6 +121,10 @@ final class TzConverterWithCache implements TZConverter {
       if (!_objCache.containsKey(e.hashCode)) _objCache[e.hashCode] = e;
     });
   }
+
+  @override
+  String getStableIanaTZName(String tzName) =>
+      parent.getStableIanaTZName(tzName);
 
   @override
   List<WinIanaZone> windowsToIana(String tziName) {

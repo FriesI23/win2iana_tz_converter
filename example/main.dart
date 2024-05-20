@@ -50,8 +50,44 @@ void convertCustomDB() {
   print('iana2win: $iana2winResult');
 }
 
+void bugNo1() {
+  void d() {
+    print('[bug#1][normal]------------------------');
+    final TzConverterWithCache ct = TZConverter.cache();
+    final win2ianaResult = ct
+        .windowsToIana("Eastern Standard Time")
+        .map((e) => e.toJson())
+        .toList();
+    print("win2iana[Eastern Standard Time]: $win2ianaResult");
+    final iana2winResult = ct
+        .ianaToWindws("America/Indiana/Petersburg")
+        .map((e) => e.toJson())
+        .toList();
+    print('iana2win[America/Indiana/Petersburg]: $iana2winResult');
+  }
+
+  void c() {
+    print('[bug#1][cache]------------------------');
+    final TZConverter ct = TZConverter();
+    final win2ianaResult = ct
+        .windowsToIana("Eastern Standard Time")
+        .map((e) => e.toJson())
+        .toList();
+    print("win2iana[Eastern Standard Time]: $win2ianaResult");
+    final iana2winResult = ct
+        .ianaToWindws("America/Indiana/Petersburg")
+        .map((e) => e.toJson())
+        .toList();
+    print('iana2win[America/Indiana/Petersburg]: $iana2winResult');
+  }
+
+  d();
+  c();
+}
+
 void main() {
   defaultConverter();
   converterWithCache();
   convertCustomDB();
+  bugNo1();
 }

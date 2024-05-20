@@ -127,5 +127,173 @@ void main() {
       final result = tzConverter.ianaToWindws('Nonexistent Time Zone');
       expect(result, isEmpty);
     });
+
+    test("getStableIanaTZName", () {
+      final tzConverter = TZConverterImpl(db: const {
+        "ianaAlias": {
+          "Asia/Test/Foo": "Asia/Test",
+        }
+      });
+      expect(tzConverter.getStableIanaTZName("Nonexistent Time Zone"),
+          equals("Nonexistent Time Zone"));
+      expect(tzConverter.getStableIanaTZName("Asia/Test"), equals("Asia/Test"));
+      expect(tzConverter.getStableIanaTZName("Asia/Test/Foo"),
+          equals("Asia/Test"));
+      expect(tzConverter.getStableIanaTZName("Asia/Test/Bar"),
+          equals("Asia/Test/Bar"));
+      expect(tzConverter.getStableIanaTZName("America/111"),
+          equals("America/111"));
+    });
+
+    test("getStableIanaTZName no alias", () {
+      final tzConverter = TZConverterImpl(db: const {});
+      expect(tzConverter.getStableIanaTZName("Nonexistent Time Zone"),
+          equals("Nonexistent Time Zone"));
+      expect(tzConverter.getStableIanaTZName("Asia/Test"), equals("Asia/Test"));
+      expect(tzConverter.getStableIanaTZName("Asia/Test/Foo"),
+          equals("Asia/Test/Foo"));
+      expect(tzConverter.getStableIanaTZName("Asia/Test/Bar"),
+          equals("Asia/Test/Bar"));
+      expect(tzConverter.getStableIanaTZName("America/111"),
+          equals("America/111"));
+    });
+  });
+
+  group('TZConverterImpl bug #1', () {
+    test('ianaToWindows/windowsToIana with multi _type', () {
+      final tzConverter = TZConverterImpl(db: {
+        "supplemental": {
+          "version": {"_unicodeVersion": "15.1.0", "_cldrVersion": "45"},
+          "windowsZones": {
+            "mapTimezones": [
+              {
+                "mapZone": {
+                  "_other": "Eastern Standard Time",
+                  "_type": "America/Toronto America/Iqaluit",
+                  "_territory": "CA"
+                }
+              },
+            ]
+          }
+        }
+      });
+
+      // case 1
+      final result1 = tzConverter.ianaToWindws("America/Toronto");
+      expect(result1.length, 1);
+      expect(
+        result1[0],
+        equals(WinIanaZone(
+            iana: 'America/Toronto',
+            windows: 'Eastern Standard Time',
+            territory: 'CA')),
+      );
+
+      // case 2
+      final result2 = tzConverter.windowsToIana("Eastern Standard Time");
+      expect(result2.length, 2);
+      expect(
+        result2[0],
+        equals(WinIanaZone(
+            iana: 'America/Toronto',
+            windows: 'Eastern Standard Time',
+            territory: 'CA')),
+      );
+      expect(
+        result2[1],
+        equals(WinIanaZone(
+            iana: 'America/Iqaluit',
+            windows: 'Eastern Standard Time',
+            territory: 'CA')),
+      );
+    });
+
+    test('ianaToWindows/windowsToIana with multi _types and keys', () {
+      final tzConverter = TZConverterImpl(db: {
+        "supplemental": {
+          "version": {"_unicodeVersion": "15.1.0", "_cldrVersion": "45"},
+          "windowsZones": {
+            "mapTimezones": [
+              {
+                "mapZone": {
+                  "_other": "Eastern Standard Time",
+                  "_type": "America/Toronto America/Iqaluit",
+                  "_territory": "CA"
+                }
+              },
+              {
+                "mapZone": {
+                  "_other": "Eastern Standard Time",
+                  "_type":
+                      "America/New_York America/Detroit America/Indiana/Petersburg America/Indiana/Vincennes America/Indiana/Winamac America/Kentucky/Monticello America/Louisville",
+                  "_territory": "US"
+                }
+              },
+              {
+                "mapZone": {
+                  "_other": "Eastern Standard Time",
+                  "_type": "EST5EDT",
+                  "_territory": "ZZ"
+                }
+              },
+            ]
+          }
+        }
+      });
+
+      // case 1
+      final result1 = tzConverter.ianaToWindws("America/Toronto");
+      expect(result1.length, 1);
+      expect(
+        result1[0],
+        equals(WinIanaZone(
+            iana: 'America/Toronto',
+            windows: 'Eastern Standard Time',
+            territory: 'CA')),
+      );
+
+      // case 2
+      final result2 = tzConverter.windowsToIana("Eastern Standard Time");
+      expect(result2.length, 10);
+      expect(
+        result2[0],
+        equals(WinIanaZone(
+            iana: 'America/Toronto',
+            windows: 'Eastern Standard Time',
+            territory: 'CA')),
+      );
+      expect(
+        result2[1],
+        equals(WinIanaZone(
+            iana: 'America/Iqaluit',
+            windows: 'Eastern Standard Time',
+            territory: 'CA')),
+      );
+      expect(
+        result2.last,
+        equals(WinIanaZone(
+            iana: 'EST5EDT',
+            windows: 'Eastern Standard Time',
+            territory: 'ZZ')),
+      );
+    });
+
+    test("Asia/Kolkata not found", () {
+      final tz = TZConverter();
+      expect(
+        tz.ianaToWindws("Asia/Kolkata")[0],
+        equals(WinIanaZone(
+            iana: 'Asia/Calcutta',
+            windows: 'India Standard Time',
+            territory: '001')),
+      );
+      expect(
+        tz.ianaToWindws("Asia/Calcutta")[0],
+        equals(WinIanaZone(
+            iana: 'Asia/Calcutta',
+            windows: 'India Standard Time',
+            territory: '001')),
+      );
+    });
   });
 }

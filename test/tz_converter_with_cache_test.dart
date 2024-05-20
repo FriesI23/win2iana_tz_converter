@@ -127,5 +127,59 @@ void main() {
       verifyNever(parentMock.ianaToWindws('Europe/London'));
       expect(result, equals([winIanaZones[1]]));
     });
+
+    test('multi _types, bug #1', () {
+      final parentMock = MockTZConverter();
+      final tzConverter = TzConverterWithCache(parentMock);
+      final realParentConverter = TZConverterImpl(db: {
+        "supplemental": {
+          "version": {"_unicodeVersion": "15.1.0", "_cldrVersion": "45"},
+          "windowsZones": {
+            "mapTimezones": [
+              {
+                "mapZone": {
+                  "_other": "Eastern Standard Time",
+                  "_type": "America/Toronto America/Iqaluit",
+                  "_territory": "CA"
+                }
+              },
+              {
+                "mapZone": {
+                  "_other": "Eastern Standard Time",
+                  "_type":
+                      "America/New_York America/Detroit America/Indiana/Petersburg America/Indiana/Vincennes America/Indiana/Winamac America/Kentucky/Monticello America/Louisville",
+                  "_territory": "US"
+                }
+              },
+              {
+                "mapZone": {
+                  "_other": "Eastern Standard Time",
+                  "_type": "EST5EDT",
+                  "_territory": "ZZ"
+                }
+              },
+            ]
+          }
+        }
+      });
+
+      // case 1
+      when(parentMock.windowsToIana("Eastern Standard Time")).thenReturn(
+          realParentConverter.windowsToIana("Eastern Standard Time"));
+      tzConverter.windowsToIana("Eastern Standard Time");
+      final result1 = tzConverter.windowsToIana("Eastern Standard Time");
+      verify(parentMock.windowsToIana("Eastern Standard Time")).called(1);
+      expect(result1,
+          equals(realParentConverter.windowsToIana("Eastern Standard Time")));
+
+      // case 2
+      when(parentMock.ianaToWindws("America/Toronto"))
+          .thenReturn(realParentConverter.ianaToWindws("America/Toronto"));
+      tzConverter.ianaToWindws("America/Toronto");
+      final result2 = tzConverter.ianaToWindws("America/Toronto");
+      verify(parentMock.ianaToWindws("America/Toronto")).called(1);
+      expect(
+          result2, equals(realParentConverter.ianaToWindws("America/Toronto")));
+    });
   });
 }
