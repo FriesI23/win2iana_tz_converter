@@ -127,6 +127,36 @@ void main() {
       final result = tzConverter.ianaToWindws('Nonexistent Time Zone');
       expect(result, isEmpty);
     });
+
+    test("getStableIanaTZName", () {
+      final tzConverter = TZConverterImpl(db: const {
+        "ianaAlias": {
+          "Asia/Test/Foo": "Asia/Test",
+        }
+      });
+      expect(tzConverter.getStableIanaTZName("Nonexistent Time Zone"),
+          equals("Nonexistent Time Zone"));
+      expect(tzConverter.getStableIanaTZName("Asia/Test"), equals("Asia/Test"));
+      expect(tzConverter.getStableIanaTZName("Asia/Test/Foo"),
+          equals("Asia/Test"));
+      expect(tzConverter.getStableIanaTZName("Asia/Test/Bar"),
+          equals("Asia/Test/Bar"));
+      expect(tzConverter.getStableIanaTZName("America/111"),
+          equals("America/111"));
+    });
+
+    test("getStableIanaTZName no alias", () {
+      final tzConverter = TZConverterImpl(db: const {});
+      expect(tzConverter.getStableIanaTZName("Nonexistent Time Zone"),
+          equals("Nonexistent Time Zone"));
+      expect(tzConverter.getStableIanaTZName("Asia/Test"), equals("Asia/Test"));
+      expect(tzConverter.getStableIanaTZName("Asia/Test/Foo"),
+          equals("Asia/Test/Foo"));
+      expect(tzConverter.getStableIanaTZName("Asia/Test/Bar"),
+          equals("Asia/Test/Bar"));
+      expect(tzConverter.getStableIanaTZName("America/111"),
+          equals("America/111"));
+    });
   });
 
   group('TZConverterImpl bug #1', () {
@@ -245,6 +275,24 @@ void main() {
             iana: 'EST5EDT',
             windows: 'Eastern Standard Time',
             territory: 'ZZ')),
+      );
+    });
+
+    test("Asia/Kolkata not found", () {
+      final tz = TZConverter();
+      expect(
+        tz.ianaToWindws("Asia/Kolkata")[0],
+        equals(WinIanaZone(
+            iana: 'Asia/Calcutta',
+            windows: 'India Standard Time',
+            territory: '001')),
+      );
+      expect(
+        tz.ianaToWindws("Asia/Calcutta")[0],
+        equals(WinIanaZone(
+            iana: 'Asia/Calcutta',
+            windows: 'India Standard Time',
+            territory: '001')),
       );
     });
   });
