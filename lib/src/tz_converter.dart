@@ -66,7 +66,10 @@ final class TZConverterImpl implements TZConverter {
   @override
   Iterable<WinIanaZone> get iter => (_database["supplemental"]["windowsZones"]
           ["mapTimezones"] as List<Map<String, Map<String, String>>>)
-      .map((e) => WinIanaZone.fromJson(e["mapZone"]!));
+      .map((d) => d["mapZone"]!["_type"]!.split(' ').map((t) =>
+          WinIanaZone.fromJson(
+              Map.of(d["mapZone"]!)..update("_type", (value) => t))))
+      .expand((e) => e);
 }
 
 final class TzConverterWithCache implements TZConverter {
